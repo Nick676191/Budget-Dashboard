@@ -34,8 +34,12 @@ import os
 import datetime
 from pprint import pprint
 from playwright.sync_api import sync_playwright
+from fake_useragent import UserAgent
 from datetime import timedelta
 import re
+import asyncio
+import random
+import time
 
 # getting the username and password for the account
 load_dotenv()
@@ -60,8 +64,11 @@ def main():
         browser = p.chromium.launch(channel="chrome", 
                                     headless=False,
                                     args=["--disable-blink-features=AutomationControlled"])
+        # "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        ua = UserAgent()
+        user_agent = ua.random
         context = browser.new_context(
-        user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        user_agent=user_agent
         )
         page = context.new_page()
 
@@ -70,7 +77,9 @@ def main():
         # login to account
         page.wait_for_selector("#eliloUserID", timeout=10000)
         page.type("#eliloUserID", username, delay=150)
+        time.sleep(random.uniform(1, 3))
         page.type("#eliloPassword", password, delay=145)
+        time.sleep(random.uniform(1, 3))
         page.click("#loginSubmit")
 
         # getting to the correct page to download the csvs
@@ -81,8 +90,9 @@ def main():
         gold_element.click()
         # working within the gold card
         page.wait_for_selector("#hamburgerMenuOpener", timeout=20000)
+        time.sleep(random.uniform(2.5, 5))
         page.get_by_role("link", name="View All Recent Transactions").click()
-        page.wait_for_timeout(5000)
+        # opening the calendar
         page.get_by_test_id("myca-feed-DateRangePicker-Header").click()
         page.get_by_test_id("dateRangePicker.customDateBadge").click()
         page.get_by_label("Open calendar").click()
@@ -90,14 +100,18 @@ def main():
         if day_num < 15:
             page.get_by_label("Previous month").click()
             prev_month_date_string = prev_month + " " + "15," + " " + str(current_date.year)
-            # page.locator(f"button[aria-label*={prev_month_date_string}]").click()
+            time.sleep(random.uniform(1, 3))
             page.get_by_role("button", name=re.compile(prev_month_date_string, re.IGNORECASE)).click()
             page.get_by_label("Next month").click()
             current_date_string = month_name + " " + str(day_num) + "," + " " + str(current_date.year)
-            # page.locator(f"button[aria-label*={current_date_string}]").click()
-            page.get_by_role("button", re.compile(current_date_string, re.IGNORECASE)).click()
+            page.get_by_role("button", name=re.compile(current_date_string, re.IGNORECASE)).click()
+            time.sleep(random.uniform(2, 4))
             page.get_by_label("Done").click()
             page.get_by_label("Download").click()
+            time.sleep(random.uniform(1, 3))
+            # clicking into the page that comes up to finalize the download
+            page.locator("#myca-activity-download-body-selection-options-csv").check()
+            page.get_by_test_id("myca-activity-download-footer-download-confirm-link").click()
 
         input("Press ENTER to quit\\n")
         page.close()
