@@ -40,6 +40,7 @@ import re
 import asyncio
 import random
 import time
+import shutil
 
 # getting the username and password for the account
 load_dotenv()
@@ -112,6 +113,13 @@ def main():
             # clicking into the page that comes up to finalize the download
             page.locator("#myca-activity-download-body-selection-options-csv").check()
             page.get_by_test_id("myca-activity-download-footer-download-confirm-link").click()
+        else:
+            print("Getting around to it")
+        
+        # moving the first gold file to its correct location and renaming it
+        gold_name = month_name + str(current_date.year) + "GoldExpenses.csv"
+        shutil.move("/Users/nickbourgeois/Downloads/activity.csv", "/Users/nickbourgeois/Documents/finance/expense-docs/Amex Gold/2026")
+        os.rename("/Users/nickbourgeois/Documents/finance/expense-docs/Amex Gold/2026/activity.csv", f"/Users/nickbourgeois/Documents/finance/expense-docs/Amex Gold/2026/{gold_name}")
 
         input("Press ENTER to quit\\n")
         page.close()
