@@ -77,9 +77,11 @@ def main():
 
         # login to account
         page.wait_for_selector("#eliloUserID", timeout=10000)
-        page.type("#eliloUserID", username, delay=150)
+        # page.type("#eliloUserID", username, delay=150)
+        page.locator("#eliloUserID").press_sequentially(username, delay=random.uniform(55, 160))
         time.sleep(random.uniform(1, 3))
-        page.type("#eliloPassword", password, delay=145)
+        # page.type("#eliloPassword", password, delay=145)
+        page.locator("#eliloPassword").press_sequentially(password, delay=random.uniform(55, 160))
         time.sleep(random.uniform(1, 3))
         page.click("#loginSubmit")
 
@@ -111,7 +113,7 @@ def main():
             page.get_by_label("Download").click()
             time.sleep(random.uniform(1, 3))
             # clicking into the page that comes up to finalize the download
-            page.locator("#myca-activity-download-body-selection-options-csv").check()
+            page.locator("#myca-activity-download-body-selection-options-csv").click()
             page.get_by_test_id("myca-activity-download-footer-download-confirm-link").click()
         else:
             print("Getting around to it")
