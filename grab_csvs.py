@@ -1,32 +1,4 @@
-# # testing that the selenium google driver works
-# from selenium import webdriver
-# from selenium.webdriver.common.by import By
-# from selenium.webdriver.support.ui import WebDriverWait
-# from selenium.webdriver.support import expected_conditions as EC
-# from dotenv import load_dotenv
-# import os
-
-# load_dotenv()
-
-# username = os.getenv("USERNAME")
-# password = os.getenv("PASSWORD")
-
-# driver = webdriver.Chrome()
-
-# driver.get("https://www.americanexpress.com/en-us/account/login")
-
-# # logging into the form, making sure to wait until everything loads before proceeding
-# WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//input[@name='eliloUserID']"))).send_keys(username)
-# # find password input box and put it in
-# driver.find_element(By.XPATH, "//input[@name='eliloPassword']").send_keys(password)
-# # click the log in button
-# driver.find_element(By.ID, "loginSubmit").submit()
-
-# # code to keep the page open until I close it
-# input("Press ENTER to exit\\n")
-# driver.quit()
-
-""""Everything above is done in selenium, does not allow me to log into the website. So I will need something a little more lightweight. Let's try playwright"""
+""""Tried first in selenium, does not allow me to log into the website. So I will need something a little more lightweight. Let's try playwright"""
 import requests
 from bs4 import BeautifulSoup as bs
 from dotenv import load_dotenv
@@ -62,14 +34,15 @@ def main():
     login_url = "https://www.americanexpress.com/en-us/account/login"
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(channel="chrome", 
+        browser = p.chromium.launch(channel="chrome",
                                     headless=False,
                                     args=["--disable-blink-features=AutomationControlled"])
         # "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         ua = UserAgent()
         user_agent = ua.random
         context = browser.new_context(
-        user_agent=user_agent
+        user_agent=user_agent,
+        accept_downloads=True
         )
         page = context.new_page()
 
@@ -113,8 +86,16 @@ def main():
             page.get_by_label("Download").click()
             time.sleep(random.uniform(1, 3))
             # clicking into the page that comes up to finalize the download
-            page.locator("#myca-activity-download-body-selection-options-csv").click()
-            page.get_by_test_id("myca-activity-download-footer-download-confirm-link").click()
+            page.click("label[for='myca-activity-download-body-selection-options-csv']")
+            with page.expect_download() as download_information:
+                page.click("span:text-is('Download')")
+
+            download = download_information.value
+            saved_path = os.path.expanduser("~/Downloads/" + download.suggested_filename)
+            download.save_as(saved_path)
+
+            print(f"Saved to {saved_path}")
+            
         else:
             print("Getting around to it")
         
