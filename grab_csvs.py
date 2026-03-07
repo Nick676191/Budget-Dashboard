@@ -63,7 +63,8 @@ def get_to_calendar(page, card_string):
     # working within the gold card
     page.wait_for_selector("#hamburgerMenuOpener", timeout=20000)
     time.sleep(random.uniform(2.5, 5))
-    page.get_by_role("link", name="View All Recent Transactions").click()
+    if "Gold" in card_string:
+        page.get_by_role("link", name="View All Recent Transactions").click()
     # opening the calendar
     page.get_by_test_id("myca-feed-DateRangePicker-Header").click()
     page.get_by_test_id("dateRangePicker.customDateBadge").click()
