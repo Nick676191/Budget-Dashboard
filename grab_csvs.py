@@ -13,6 +13,7 @@ import asyncio
 import random
 import time
 import shutil
+import pandas as pd
 
 # getting the username and password for the account
 load_dotenv()
@@ -99,6 +100,9 @@ def shifter(card_string):
     name = str(current_date.day) + month_name + str(current_date.year) + f"{card_string}Expenses.csv"
     shutil.move("/Users/nickbourgeois/Downloads/activity.csv", f"/Users/nickbourgeois/Documents/finance/expense-docs/Amex {card_string}/2026")
     os.rename(f"/Users/nickbourgeois/Documents/finance/expense-docs/Amex {card_string}/2026/activity.csv", f"/Users/nickbourgeois/Documents/finance/expense-docs/Amex {card_string}/2026/{name}")
+    df = pd.read_csv(f"/Users/nickbourgeois/Documents/finance/expense-docs/Amex {card_string}/2026/{name}")
+
+    return df
 
 
 def main():
@@ -122,7 +126,7 @@ def main():
             print("Getting around to it")
         
         # moving the first gold file to its correct location and renaming it
-        shifter("Gold")
+        gold_card_df = shifter("Gold")
 
         # getting the platinum card next
         page = get_to_calendar(page, "Platinum")
@@ -133,10 +137,15 @@ def main():
             print("Getting to it")
         
         # moving the first gold file to its correct location and renaming it
-        shifter("Platinum")
+        plat_card_df = shifter("Platinum")
 
         input("Press ENTER to quit\\n")
         page.close()
+    
+    # concatenate the files together and export to my computer to be input into the dashboard
+    concat_card_df = pd.concat([gold_card_df, plat_card_df])
+    concat_name = str(current_date.day) + month_name + str(current_date.year) + "Expenses.csv"
+    concat_card_df.to_csv(f"/Users/nickbourgeois/Documents/finance/expense-docs/Merged Cards/{concat_name}", index=False)
 
 if __name__ == "__main__":
     main()
