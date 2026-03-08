@@ -96,6 +96,27 @@ def pre_fifteen_download(page):
 
     return page
 
+def post_fifteen_download(page):
+    month_date_string = month_name + " " + "15," + " " + str(current_date.year)
+    time.sleep(random.uniform(1, 3))
+    page.get_by_role("button", name=re.compile(month_date_string, re.IGNORECASE)).click()
+    current_date_string = month_name + " " + str(day_num) + "," + " " + str(current_date.year)
+    page.get_by_role("button", name=re.compile(current_date_string, re.IGNORECASE)).click()
+    time.sleep(random.uniform(2, 4))
+    page.get_by_label("Done").click()
+    page.get_by_label("Download").click()
+    time.sleep(random.uniform(1, 3))
+    # clicking into the page that comes up to finalize the download
+    page.click("label[for='myca-activity-download-body-selection-options-csv']")
+    with page.expect_download() as download_information:
+        page.click("span:text-is('Download')")
+
+    download = download_information.value
+    saved_path = os.path.expanduser("~/Downloads/" + download.suggested_filename)
+    download.save_as(saved_path)
+
+    return page
+
 def shifter(card_string):
     name = str(current_date.day) + month_name + str(current_date.year) + f"{card_string}Expenses.csv"
     shutil.move("/Users/nickbourgeois/Downloads/activity.csv", f"/Users/nickbourgeois/Documents/finance/expense-docs/Amex {card_string}/2026")
@@ -120,10 +141,10 @@ def main():
         page = get_to_calendar(page, "Gold Card")
 
         # logic to pick custom dates for the csv
-        if day_num < 15:
+        if day_num <= 15:
             page = pre_fifteen_download(page)
         else:
-            print("Getting around to it")
+            page = post_fifteen_download(page)
         
         # moving the first gold file to its correct location and renaming it
         gold_card_df = shifter("Gold")
@@ -131,10 +152,10 @@ def main():
         # getting the platinum card next
         page = get_to_calendar(page, "Platinum")
 
-        if day_num < 15:
+        if day_num <= 15:
             page = pre_fifteen_download(page)
         else:
-            print("Getting to it")
+            page = post_fifteen_download(page)
         
         # moving the first gold file to its correct location and renaming it
         plat_card_df = shifter("Platinum")
