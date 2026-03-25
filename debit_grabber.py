@@ -42,12 +42,41 @@ with sync_playwright() as p:
     page.locator("#BankingLoginSubmit").click()
 
     # clicking into the checking account
+    page.wait_for_selector("#ember7", timeout=20000)
+    # first issue to debug
+    page.locator('q2-icon[test-id="ae-account-tile-category-icon"]').click()
+    time.sleep(random.uniform(2, 4))
 
     # filtering for the correct dates
     # if after the 15th of each month we will check spending from the 15th until the current day
     # if before the 15th of the month we will check spending from the 15th of the previous month
+    page.get_by_test_id("q2BtnInnerButton").click()
+    page.locator("#input-guid-1017").click()
+    page.locator('q2-option[value="custom"]').click()
+    page.locator("#input-guid-1020").click()
+
+    if day_num <= 15:
+        page.get_by_label("Previous month").click()
+        page.locator('td[data-day="15"]').click()
+        page.locator("#input-guid-1021").click()
+        day_num_str = str(day_num)
+        page.locator(f'td[data-day="{day_num_str}"]').click()
+        page.get_by_test_id("btnApplyFilter").click()
+    else:
+        page.locator('td[data-day="15"]').click()
+        page.locator("#input-guid-1021").click()
+        day_num_str = str(day_num)
+        page.locator(f'td[data-day="{day_num_str}"]').click()
+        page.get_by_test_id("btnApplyFilter").click()
 
     # download the csv file
+    page.get_by_test_id("q2BtnInnerButton").click()
+    with page.expect_download() as download_info:
+        page.click('q2-dropdown-item[id="CSV"]')
+    
+    download = download_info.value
+    saved_path = os.path.expanduser("~/Downloads/" + download.suggested_filename)
+    download.save_as(saved_path)
 
     input("Press ENTER to quit\\n")
     page.close()
