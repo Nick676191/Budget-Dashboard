@@ -44,8 +44,9 @@ with sync_playwright() as p:
     # clicking into the checking account
     page.wait_for_selector("#ember7", timeout=20000)
     # first issue to debug
-    page.locator('q2-icon[test-id="ae-account-tile-category-icon"]').click()
+    page.locator('button[class="is-block has-intent"]').click()
     time.sleep(random.uniform(2, 4))
+    page.locator('div[class="flex-content hasBadge composable-dashboard-enabled"]').click()
 
     # filtering for the correct dates
     # if after the 15th of each month we will check spending from the 15th until the current day
